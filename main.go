@@ -1,13 +1,22 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/kataras/iris/v12"
 )
+
+//go:embed templates
+var templateFs embed.FS
+
+//go:embed static
+var staticFs embed.FS
 
 var app = iris.New()
 
@@ -25,7 +34,7 @@ func check_dir(dir string) bool {
 	return true
 }
 
-func check_file(file string) bool {
+func check_is_file(file string) bool {
 	s, err := os.Stat(file)
 	if err != nil || s.IsDir() {
 		app.Logger().Errorf(" file [%s] invalid", file)
@@ -45,6 +54,7 @@ func main() {
 	if !check_dir(filesPath) {
 		return
 	}
+	filesPath, _ = filepath.Abs(filesPath)
 
 	app.UseRouter(func(ctx iris.Context) {
 		app.Logger().Info(fmt.Sprintf("%s -> %s",
@@ -55,12 +65,15 @@ func main() {
 	})
 
 	app.Logger().Info(fmt.Sprintf("loading config [%s]", configFile))
+	app.Logger().Info(fmt.Sprintf("use  [%s] as temp folder ", filesPath))
 
 	//载入模板
-	var tmpl = iris.HTML("./templates", ".html")
+	ftemp := iris.PrefixDir("templates", http.FS(templateFs))
+	var tmpl = iris.HTML(ftemp, ".html")
 	app.RegisterView(tmpl)
 	//静态文件
-	app.HandleDir("/static", iris.Dir("./static"))
+	fstatic := iris.PrefixDir("static", http.FS(staticFs))
+	app.HandleDir("/static", fstatic)
 	app.HandleDir("/file", iris.Dir(filesPath))
 	app.Use(iris.Compression)
 
@@ -73,5 +86,8 @@ func main() {
 
 	app.Get("/serv/print", action_print)
 	app.Get("/", action_welcome)
+	app.Get("/info", func(ctx iris.Context) {
+		ctx.JSON(Success("pong"))
+	})
 	app.Listen(":" + strconv.Itoa(port))
 }

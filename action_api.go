@@ -119,7 +119,7 @@ func action_file_list(ctx iris.Context) {
 		pathDisc := PathDesc{}
 		pathDisc.Name = info.Name()
 		pathDisc.Path = relateUrl + "/" + info.Name()
-		pathDisc.Url = relateUrl + "/" + info.Name()
+		pathDisc.Url = "/file/" + info.Name()
 		pathDisc.IsFile = !info.IsDir()
 		pathDisc.CanDelete = true
 		fileList = append(fileList, pathDisc)
