@@ -1,0 +1,5 @@
+# scanserv
+
+```sh
+scanserv -h
+```
