@@ -1,0 +1,93 @@
+
+{{template "header"}}
+
+<div class="container-fluid py-4"> 
+    <nav aria-label="breadcrumb" id="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#" class="list-path" data-dir="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Library</li>
+        </ol>
+      </nav>
+    <div class="row align-items-md-stretch">
+      <div class="col-md-12">
+        <div  id="filelist" class="h-200 p-3  border rounded-3" style="overflow:hidden;height:500px;width:100%">
+            <p class="hero">点击路径查看文件</p>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script>
+
+    function download(path){
+        window.open(path)
+    }
+
+    function downloade(e){
+        let path = $(e).data("path")
+        console.log(path)
+        window.open(path)
+    }
+
+    function del(e){
+        let path = $(e).data("path")
+        console.log(path)
+        $.get("/fileman/delete",{"path":path},function(e){
+            loadfolder($("#breadcrumb").data("root"))
+        })
+    }
+
+    function loadfolder(dir){
+
+        $.get("/fileman/list",{"dir":dir},function(response){
+            if(response.code == 0){
+                console.log(response)
+
+                $("#breadcrumb").data("root",response.data.root)
+                let html = '<ul class="list-group">'
+                for(index in response.data.file_list){
+                    item = response.data.file_list[index]
+                    console.log(item)
+                    if(item.is_file){
+
+                        html+='<li class="list-group-item d-flex justify-content-between align-items-center"><a href="javascript:;" onclick="downloade(this)" data-path="'+item.url+'">'+item.name+"</a>"
+
+                        if (item.can_delete){
+                            html += '<div class="pull-right"><a href="javascript:;" onclick="del(this)" data-path="'+item.path+'">删除</a></div>'
+                        }
+
+                        html += "</li>"
+                    }else{
+                        html+='<li class="list-group-item d-flex justify-content-between align-items-center" onclick="javascript:loadfolder_element(this)" data-dir="'+item.path+'">'+item.name
+                        if (item.can_delete){
+                            html += '<div class="pull-right"><a href="javascript:;" onclick="del(this)" data-path="'+item.path+'">删除</a></div>'
+                        }
+                        html +=  '</li>'
+
+                    }
+                }
+                html+="</ul>"
+                $("#filelist").html(html)
+
+                html = '<ol class="breadcrumb"><li class="breadcrumb-item"><a href="#" onclick="javascript:loadfolder_element(this)" data-dir="/">ROOT</a></li>'
+                for (index in response.data.nav_list){
+                    html+='<li class="breadcrumb-item" aria-current="page" onclick="loadfolder_element(this)" data-dir="'+response.data.nav_list[index].path+'">'+response.data.nav_list[index].name+'</li>'
+                }
+                html += '</ol>'
+                $("#breadcrumb").html(html)
+            }
+         })
+    }
+
+
+    function loadfolder_element(e){
+        let dir = $(e).data("dir")
+        loadfolder(dir)
+    }
+
+   
+    $(function(){loadfolder("/")})
+
+</script>
+
+{{template "footer"}}
