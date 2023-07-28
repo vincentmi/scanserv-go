@@ -32,14 +32,14 @@ func check_dir(dir string) bool {
 	return true
 }
 
-func check_is_file(file string) bool {
-	s, err := os.Stat(file)
-	if err != nil || s.IsDir() {
-		app.Logger().Errorf(" file [%s] invalid", file)
-		return false
-	}
-	return true
-}
+// func check_is_file(file string) bool {
+// 	s, err := os.Stat(file)
+// 	if err != nil || s.IsDir() {
+// 		app.Logger().Errorf(" file [%s] invalid", file)
+// 		return false
+// 	}
+// 	return true
+// }
 
 func main() {
 
