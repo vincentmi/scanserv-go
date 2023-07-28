@@ -19,8 +19,6 @@ var templateFs embed.FS
 var staticFs embed.FS
 
 var app = iris.New()
-
-var configFile string
 var port int
 var filesPath string
 var scanCommand string
@@ -45,10 +43,9 @@ func check_is_file(file string) bool {
 
 func main() {
 
-	flag.StringVar(&configFile, "c", "./config.yaml", "配置文件config.yaml")
 	flag.IntVar(&port, "p", 8080, "监听端口")
 	flag.StringVar(&filesPath, "f", "./file", "上传和中转文件路径")
-	flag.StringVar(&scanCommand, "m", "/bin/scanimage", "扫描命令")
+	flag.StringVar(&scanCommand, "m", "/usr/bin/scanimage", "扫描命令")
 	flag.Parse()
 
 	if !check_dir(filesPath) {
@@ -64,12 +61,16 @@ func main() {
 
 	})
 
-	app.Logger().Info(fmt.Sprintf("loading config [%s]", configFile))
+	app.Logger().SetLevel("debug")
+
+	app.Logger().Info(fmt.Sprintf("listen at [%s]", strconv.Itoa(port)))
 	app.Logger().Info(fmt.Sprintf("use  [%s] as temp folder ", filesPath))
+	app.Logger().Info(fmt.Sprintf("use scan command  [%s]  ", scanCommand))
 
 	//载入模板
 	ftemp := iris.PrefixDir("templates", http.FS(templateFs))
 	var tmpl = iris.HTML(ftemp, ".html")
+	tmpl.Delims("{%", "%}")
 	app.RegisterView(tmpl)
 	//静态文件
 	fstatic := iris.PrefixDir("static", http.FS(staticFs))

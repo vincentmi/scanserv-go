@@ -1,5 +1,5 @@
 
-{{template "header"}}
+{%template "header"%}
 
 <div class="container-fluid py-4"> 
     <nav aria-label="breadcrumb" id="breadcrumb">
@@ -33,7 +33,12 @@
         let path = $(e).data("path")
         console.log(path)
         $.get("/fileman/delete",{"path":path},function(e){
-            loadfolder($("#breadcrumb").data("root"))
+            if(e.code == 0){
+                loadfolder($("#breadcrumb").data("root"))
+            }else{
+                showError(response.message)
+            } 
+            
         })
     }
 
@@ -75,6 +80,8 @@
                 }
                 html += '</ol>'
                 $("#breadcrumb").html(html)
+            }else{
+                showError(response.message)
             }
          })
     }
@@ -90,4 +97,4 @@
 
 </script>
 
-{{template "footer"}}
+{%template "footer"%}
